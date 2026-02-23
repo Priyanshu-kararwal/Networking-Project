@@ -1,7 +1,9 @@
+
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
-from matplotlib.widgets import Button
 import os
+from io import BytesIO
+from PIL import Image
 
 
 ICON_PATH = "icon"
@@ -77,107 +79,66 @@ connections = [
 ICON_SIZE = 0.45
 
 
-fig, ax = plt.subplots(figsize=(14,9))
-plt.subplots_adjust(right=0.78)
 
-ax.set_xlim(0,10)
-ax.set_ylim(0,10)
-ax.axis('off')
-
-def draw_network():
-
-    ax.clear()
-    ax.set_xlim(0,10)
-    ax.set_ylim(0,10)
+def get_network_diagram(device_state_override=None):
+    """
+    Draw the network diagram and return as a PIL Image.
+    Optionally override device_state with a provided dict.
+    """
+    fig, ax = plt.subplots(figsize=(10, 6))
+    plt.subplots_adjust(left=0.05, right=0.95, top=0.92, bottom=0.08)
+    ax.set_xlim(0, 10)
+    ax.set_ylim(0, 10)
     ax.axis('off')
 
-    for a,b in connections:
-        if device_state[a] and device_state[b]:
-            x1,y1 = pos[a]
-            x2,y2 = pos[b]
+    state = device_state.copy()
+    if device_state_override:
+        state.update(device_state_override)
 
+    for a, b in connections:
+        if state[a] and state[b]:
+            x1, y1 = pos[a]
+            x2, y2 = pos[b]
             ax.plot(
-                [x1,x2],
-                [y1,y2],
-                color="black",
-                linewidth=2,
+                [x1, x2],
+                [y1, y2],
+                color="#222",
+                linewidth=2.5,
                 zorder=1
             )
 
-    # ---------- DEVICE ICONS ----------
-    for dev,icon in devices.items():
-
-        x,y = pos[dev]
-        path = os.path.join(ICON_PATH,icon)
-
+    for dev, icon in devices.items():
+        x, y = pos[dev]
+        path = os.path.join(ICON_PATH, icon)
         if os.path.exists(path):
             img = mpimg.imread(path)
             ax.imshow(
                 img,
-                extent=(x-ICON_SIZE,
-                        x+ICON_SIZE,
-                        y-ICON_SIZE,
-                        y+ICON_SIZE),
+                extent=(x-ICON_SIZE, x+ICON_SIZE, y-ICON_SIZE, y+ICON_SIZE),
                 zorder=3
             )
-
-        status = "ON" if device_state[dev] else "OFF"
-        color = "green" if device_state[dev] else "red"
-
-        # PCs → label BELOW
+        status = "ON" if state[dev] else "OFF"
+        color = "#388e3c" if state[dev] else "#c62828"
         if "PC" in dev:
             ax.text(
-                x,
-                y-0.85,
-                f"{dev} ({status})",
-                ha="center",
-                fontsize=11,
-                fontweight="bold",
-                color=color,
-                zorder=5
+                x, y-0.85, f"{dev} ({status})",
+                ha="center", fontsize=11, fontweight="bold",
+                color=color, zorder=5
             )
-
-        # Network devices → label BESIDE
         else:
             ax.text(
-                x+0.7,
-                y,
-                f"{dev} ({status})",
-                va="center",
-                fontsize=11,
-                fontweight="bold",
-                color=color,
-                zorder=5
+                x+0.7, y, f"{dev} ({status})",
+                va="center", fontsize=11, fontweight="bold",
+                color=color, zorder=5
             )
 
     ax.set_title(
         "Enterprise Network Failure Simulation Dashboard",
-        fontsize=18,
-        fontweight="bold"
+        fontsize=16, fontweight="bold"
     )
 
-    plt.draw()
-
-draw_network()
-
-
-# TOGGLE BUTTONS
-buttons = {}
-y_pos = 0.92
-
-def toggle_device(device):
-
-    def action(event):
-        device_state[device] = not device_state[device]
-        draw_network()
-
-    return action
-
-for dev in devices:
-    ax_btn = plt.axes([0.82, y_pos, 0.15, 0.04])
-    btn = Button(ax_btn, dev)
-    btn.on_clicked(toggle_device(dev))
-    buttons[dev] = btn
-    y_pos -= 0.055
-
-plt.show()
+    buf = BytesIO()
+    plt.savefig(buf, format="png", bbox_inches="tight")
+    plt.close(fig)
+    buf.seek(0)
+    return Image.open(buf)
