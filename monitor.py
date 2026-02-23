@@ -4,8 +4,7 @@ from matplotlib.widgets import Button
 import os
 
 
-ICON_PATH = r"D:\Priyanshu\main project\icon"
-
+ICON_PATH = "icon"
 
 devices = {
     "MPLS-1":"mpls.png",
