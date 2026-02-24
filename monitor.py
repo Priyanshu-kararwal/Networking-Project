@@ -6,7 +6,10 @@ from io import BytesIO
 from PIL import Image
 
 
-ICON_PATH = "icon"
+# Use the explicit icon directory path provided by the application.
+# This ensures icons are loaded from the correct project folder regardless
+# of the current working directory.
+ICON_PATH = r"D:/Priyanshu/main project/icon"
 
 devices = {
     "MPLS-1":"mpls.png",

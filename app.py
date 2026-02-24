@@ -2,6 +2,7 @@ import streamlit as st
 from datetime import datetime
 import os
 import sys
+import base64
 
 sys.path.append('.')
 import monitor
@@ -9,7 +10,6 @@ import monitor
 # ============================================================
 # ICON DIRECTORY (YOUR PATH)
 # ============================================================
-ICON_DIR = r"D:/Priyanshu/main project/icon"
 
 # ============================================================
 # PAGE CONFIG
@@ -166,19 +166,19 @@ st.markdown(light_theme_css + icon_css, unsafe_allow_html=True)
 # DEVICES
 # ============================================================
 device_icons = {
-    "MPLS-1": "mpls.png",
-    "MPLS-2": "mpls.png",
-    "ILL-1": "ill.png",
-    "ILL-2": "ill.png",
-    "Core Storage": "server.png",
-    "Firewall": "firewall.png",
-    "Backup Storage": "server.png",
-    "AP-1": "wifi.png",
-    "AP-2": "wifi.png",
-    "PC-1": "pc.png",
-    "PC-2": "pc.png",
-    "PC-3": "pc.png",
-    "PC-4": "pc.png"
+    "MPLS-1": "D:/Priyanshu/main project/icon/mpls.png",
+    "MPLS-2": "D:/Priyanshu/main project/icon/mpls.png",
+    "ILL-1": "D:/Priyanshu/main project/icon/ill.png",
+    "ILL-2": "D:/Priyanshu/main project/icon/ill.png",
+    "Core Storage": "D:/Priyanshu/main project/icon/server.png",
+    "Firewall": "D:/Priyanshu/main project/icon/firewall.png",
+    "Backup Storage": "D:/Priyanshu/main project/icon/server.png",
+    "AP-1": "D:/Priyanshu/main project/icon/wifi.png",
+    "AP-2": "D:/Priyanshu/main project/icon/wifi.png",
+    "PC-1": "D:/Priyanshu/main project/icon/pc.png",
+    "PC-2": "D:/Priyanshu/main project/icon/pc.png",
+    "PC-3": "D:/Priyanshu/main project/icon/pc.png",
+    "PC-4": "D:/Priyanshu/main project/icon/pc.png"
 }
 
 device_layers = {
@@ -235,11 +235,15 @@ for layer,devices in device_layers.items():
             icon_html=""
 
             if icon_file:
-                icon_path=os.path.join(ICON_DIR,icon_file)
+                # construct full path to image file
+                icon_path = os.path.join(r"D:/Priyanshu/main project/icon", icon_file)
                 if os.path.exists(icon_path):
+                    # embed image as base64 to avoid file:// restrictions
+                    with open(icon_path, "rb") as f:
+                        data = base64.b64encode(f.read()).decode()
                     icon_html=f"""
                     <div class="device-icon">
-                        <img src="file:///{icon_path.replace('\\','/')}" alt="{device}" class="icon-img">
+                        <img src="data:image/png;base64,{data}" alt="{device}" class="icon-img">
                     </div>
                     """
 
